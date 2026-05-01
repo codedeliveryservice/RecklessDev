@@ -751,6 +751,13 @@ fn search<NODE: NodeType>(
                 break;
             }
 
+            // Useless Check Pruning
+            let useless_check_value = eval + 100 * depth + 120 * history / 1024 - 15;
+
+            if !in_check && is_quiet && td.board.is_direct_check(mv) && useless_check_value <= alpha {
+                continue;
+            }
+
             // Static Exchange Evaluation Pruning (SEE Pruning)
             let threshold = if is_quiet {
                 (-17 * depth * depth + 52 * depth - 21 * history / 1024 + 20).min(0)
