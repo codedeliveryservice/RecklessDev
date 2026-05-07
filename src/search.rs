@@ -494,7 +494,7 @@ fn search<NODE: NodeType>(
         0
     };
 
-    let improving = improvement > 0;
+    let improving = improvement > 0 && !excluded;
 
     // Razoring
     if !NODE::PV
