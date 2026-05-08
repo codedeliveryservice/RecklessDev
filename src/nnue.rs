@@ -263,7 +263,7 @@ impl Network {
 
             let l1_out = forward::propagate_l1(&ft_out, &nnz_indexes[..nnz_count], bucket, parameters);
             let l2_out = forward::propagate_l2(&l1_out, bucket, parameters);
-            let l3_out = forward::propagate_l3(&l2_out, bucket, parameters);
+            let l3_out = forward::propagate_l3(&l1_out, &l2_out, bucket, parameters);
 
             (l3_out * NETWORK_SCALE as f32) as i32
         }
@@ -281,7 +281,7 @@ impl Network {
             let (nnz_indexes, nnz_count) = forward::find_nnz(&ft_out, &self.nnz_table);
             let l1_out = forward::propagate_l1(&ft_out, &nnz_indexes[..nnz_count], bucket, parameters);
             let l2_out = forward::propagate_l2(&l1_out, bucket, parameters);
-            let l3_out = forward::propagate_l3(&l2_out, bucket, parameters);
+            let l3_out = forward::propagate_l3(&l1_out, &l2_out, bucket, parameters);
             (l3_out * NETWORK_SCALE as f32) as i32
         }
     }
@@ -331,7 +331,7 @@ pub struct Parameters {
     l1_biases: Aligned<[[f32; L2_SIZE]; OUTPUT_BUCKETS]>,
     l2_weights: Aligned<[[[f32; L3_SIZE]; L2_SIZE]; OUTPUT_BUCKETS]>,
     l2_biases: Aligned<[[f32; L3_SIZE]; OUTPUT_BUCKETS]>,
-    l3_weights: Aligned<[[f32; L3_SIZE]; OUTPUT_BUCKETS]>,
+    l3_weights: Aligned<[[f32; L2_SIZE + L3_SIZE]; OUTPUT_BUCKETS]>,
     l3_biases: Aligned<[f32; OUTPUT_BUCKETS]>,
 }
 

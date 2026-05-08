@@ -136,18 +136,26 @@ pub unsafe fn propagate_l2(
     output
 }
 
-pub unsafe fn propagate_l3(l2_out: &Aligned<[f32; L3_SIZE]>, bucket: usize, parameters: &Parameters) -> f32 {
+pub unsafe fn propagate_l3(
+    l1_out: &Aligned<[f32; L2_SIZE]>, l2_out: &Aligned<[f32; L3_SIZE]>, bucket: usize, parameters: &Parameters,
+) -> f32 {
     const LANES: usize = 16 / simd::F32_LANES;
 
-    let input = l2_out.as_ptr();
     let weights = parameters.l3_weights[bucket].as_ptr();
 
     let mut output = [simd::zero_f32(); LANES];
 
     for (lane, result) in output.iter_mut().enumerate() {
-        for i in (0..L3_SIZE).step_by(LANES * simd::F32_LANES) {
+        for i in (0..L2_SIZE).step_by(LANES * simd::F32_LANES) {
             let a = *weights.add(i + lane * simd::F32_LANES).cast();
-            let b = *input.add(i + lane * simd::F32_LANES).cast();
+            let b = *l1_out.as_ptr().add(i + lane * simd::F32_LANES).cast();
+
+            *result = simd::mul_add_f32(a, b, *result);
+        }
+
+        for i in (0..L3_SIZE).step_by(LANES * simd::F32_LANES) {
+            let a = *weights.add(L2_SIZE + i + lane * simd::F32_LANES).cast();
+            let b = *l2_out.as_ptr().add(i + lane * simd::F32_LANES).cast();
 
             *result = simd::mul_add_f32(a, b, *result);
         }
