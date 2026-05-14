@@ -342,7 +342,7 @@ fn search<NODE: NodeType>(
         tt_move = entry.mv;
         tt_score = entry.score;
         tt_bound = entry.bound;
-        tt_pv |= entry.tt_pv;
+        tt_pv = if excluded { td.stack[ply].tt_pv } else { NODE::PV || entry.tt_pv };
         tt_was_pv = entry.tt_pv;
 
         if !NODE::PV
