@@ -529,7 +529,7 @@ fn search<NODE: NodeType>(
         && !is_loss(beta)
         && !is_win(estimated_score)
     {
-        return lerp(estimated_score, beta, 0.63);
+        return lerp(estimated_score, beta, 63);
     }
 
     // Null Move Pruning (NMP)
@@ -643,7 +643,7 @@ fn search<NODE: NodeType>(
                 if is_decisive(score) {
                     return score;
                 }
-                return lerp(score, beta, 0.24);
+                return lerp(score, beta, 24);
             }
         }
     }
@@ -684,7 +684,7 @@ fn search<NODE: NodeType>(
         }
         // Multi-Cut
         else if singular_score >= beta && !is_decisive(singular_score) {
-            return lerp(singular_score, beta, 0.34);
+            return lerp(singular_score, beta, 34);
         } else if singular_score > tt_score && td.stack[ply].mv != Move::NULL {
             tt_move = Move::NULL;
         }
@@ -1098,7 +1098,7 @@ fn search<NODE: NodeType>(
     tt_pv |= !NODE::ROOT && bound == Bound::Upper && move_count > 2 && td.stack[ply - 1].tt_pv;
 
     if !NODE::ROOT && best_score >= beta && !is_decisive(best_score) && !is_decisive(alpha) {
-        best_score = lerp(best_score, beta, 0.12);
+        best_score = lerp(best_score, beta, 12);
     }
 
     #[cfg(feature = "syzygy")]
@@ -1216,7 +1216,7 @@ fn qsearch<NODE: NodeType>(td: &mut ThreadData, mut alpha: i32, beta: i32, ply: 
     // Stand Pat
     if best_score >= beta {
         if !is_decisive(best_score) && !is_decisive(beta) {
-            best_score = lerp(best_score, beta, 0.69);
+            best_score = lerp(best_score, beta, 69);
         }
 
         if entry.is_none() {
@@ -1296,7 +1296,7 @@ fn qsearch<NODE: NodeType>(td: &mut ThreadData, mut alpha: i32, beta: i32, ply: 
     }
 
     if best_score >= beta && !is_decisive(best_score) && !is_decisive(beta) {
-        best_score = lerp(best_score, beta, 0.45);
+        best_score = lerp(best_score, beta, 45);
     }
 
     let bound = if best_score >= beta { Bound::Lower } else { Bound::Upper };
@@ -1390,6 +1390,6 @@ fn undo_move(td: &mut ThreadData, mv: Move) {
     td.board.undo_move(mv);
 }
 
-const fn lerp(a: i32, b: i32, t: f32) -> i32 {
-    t.mul_add((b - a) as f32, a as f32) as i32
+const fn lerp(a: i32, b: i32, t: i32) -> i32 {
+    a + ((b - a) * t) / 100
 }
