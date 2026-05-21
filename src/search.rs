@@ -430,18 +430,18 @@ fn search<NODE: NodeType>(
 
     // Prefer the TT entry to tighten the evaluation when its bound aligns with
     // the current alpha-beta window; otherwise, retain the unbounded evaluation
-    let estimated_score = if !in_check
+    if !in_check
         && !excluded
+        && !is_decisive(tt_score)
         && is_valid(tt_score)
         && match tt_bound {
             Bound::Upper => tt_score < eval,
             Bound::Lower => tt_score > eval,
             _ => true,
-        } {
-        tt_score
-    } else {
-        eval
-    };
+        }
+    {
+        eval = tt_score;
+    }
 
     // Use the bounded TT entry score for evaluation when in check
     if in_check
@@ -506,7 +506,7 @@ fn search<NODE: NodeType>(
     // Razoring
     if !NODE::PV
         && !in_check
-        && estimated_score < alpha - 265 - 267 * depth * depth
+        && eval < alpha - 265 - 267 * depth * depth
         && alpha < 2048
         && !tt_move.is_quiet()
         && tt_bound != Bound::Lower
@@ -518,7 +518,7 @@ fn search<NODE: NodeType>(
     if !tt_pv
         && !in_check
         && !excluded
-        && estimated_score
+        && eval
             >= beta
                 + (1189 * depth * depth / 128 - 96 * improvement / 1024
                     + 23 * depth
@@ -527,9 +527,8 @@ fn search<NODE: NodeType>(
                     - 19)
                     .max(1)
         && !is_loss(beta)
-        && !is_win(estimated_score)
     {
-        return lerp(estimated_score, beta, 0.63);
+        return lerp(eval, beta, 0.63);
     }
 
     // Null Move Pruning (NMP)
@@ -537,7 +536,7 @@ fn search<NODE: NodeType>(
         && !in_check
         && !excluded
         && !potential_singularity
-        && estimated_score
+        && eval
             >= beta
                 + (-9 * depth + 108 * tt_pv as i32
                     - 96 * improvement / 1024
@@ -547,15 +546,14 @@ fn search<NODE: NodeType>(
         && ply as i32 >= td.nmp_min_ply
         && td.board.material() > 624
         && !is_loss(beta)
-        && !is_win(estimated_score)
+        && !is_win(eval)
         && !(tt_bound == Bound::Lower
             && tt_move.is_capture()
             && td.board.piece_on(tt_move.to()).value() >= PieceType::Knight.value())
     {
         debug_assert_ne!(td.stack[ply - 1].mv, Move::NULL);
 
-        let r =
-            (4311 + 1024 * improving as i32 + 260 * depth + 493 * (estimated_score - beta).clamp(0, 1003) / 128) / 1024;
+        let r = (4311 + 1024 * improving as i32 + 260 * depth + 493 * (eval - beta).clamp(0, 1003) / 128) / 1024;
 
         td.stack[ply].conthist = td.stack.sentinel().conthist;
         td.stack[ply].contcorrhist = td.stack.sentinel().contcorrhist;
@@ -701,7 +699,7 @@ fn search<NODE: NodeType>(
         }
     }
     // Low Depth Singular Extensions (LDSE)
-    else if depth <= 7 && !in_check && cut_node && estimated_score <= alpha - 25 {
+    else if depth <= 7 && !in_check && cut_node && eval <= alpha - 25 {
         extension = 1;
     }
 
