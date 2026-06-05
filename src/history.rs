@@ -12,21 +12,21 @@ fn apply_bonus<const MAX: i32>(entry: &mut i16, bonus: i32) {
 }
 
 pub struct QuietHistory {
-    // [side_to_move][from_threatened][to_threatened][from][to]
-    entries: Box<[[[FromToHistory<i16>; 2]; 2]; 2]>,
+    // [bucket][side_to_move][from_threatened][to_threatened][from][to]
+    entries: Box<[[[[FromToHistory<i16>; 2]; 2]; 2]; 16]>,
 }
 
 impl QuietHistory {
     const MAX_HISTORY: i32 = 8192;
 
-    pub fn get(&self, threats: Bitboard, stm: Color, mv: Move) -> i32 {
-        self.entries[stm][threats.contains(mv.from()) as usize][threats.contains(mv.to()) as usize][mv.from()][mv.to()]
-            as i32
+    pub fn get(&self, threats: Bitboard, stm: Color, mv: Move, bucket: usize) -> i32 {
+        self.entries[bucket][stm][threats.contains(mv.from()) as usize][threats.contains(mv.to()) as usize][mv.from()]
+            [mv.to()] as i32
     }
 
-    pub fn update(&mut self, threats: Bitboard, stm: Color, mv: Move, bonus: i32) {
-        let entry = &mut self.entries[stm][threats.contains(mv.from()) as usize][threats.contains(mv.to()) as usize]
-            [mv.from()][mv.to()];
+    pub fn update(&mut self, threats: Bitboard, stm: Color, mv: Move, bucket: usize, bonus: i32) {
+        let entry = &mut self.entries[bucket][stm][threats.contains(mv.from()) as usize]
+            [threats.contains(mv.to()) as usize][mv.from()][mv.to()];
         apply_bonus::<{ Self::MAX_HISTORY }>(entry, bonus);
     }
 }

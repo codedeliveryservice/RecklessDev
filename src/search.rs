@@ -380,7 +380,8 @@ fn search<NODE: NodeType>(
                 let quiet_bonus = (177 * depth - 73).min(1702);
                 let cont_bonus = (105 * depth - 69).min(1169);
 
-                td.quiet_history.update(td.board.all_threats(), stm, tt_move, quiet_bonus);
+                let bucket = td.board.fiftymove_clock_bucket();
+                td.quiet_history.update(td.board.all_threats(), stm, tt_move, bucket, quiet_bonus);
                 update_continuation_histories(td, ply, td.board.moved_piece(tt_move), tt_move.to(), cont_bonus);
             }
 
@@ -482,7 +483,8 @@ fn search<NODE: NodeType>(
         let value = 880 * (-(eval + td.stack[ply - 1].eval)) / 128;
         let bonus = value.clamp(-133, 361);
 
-        td.quiet_history.update(td.board.prior_threats(), !stm, td.stack[ply - 1].mv, bonus);
+        let bucket = td.board.prior_fiftymove_clock_bucket();
+        td.quiet_history.update(td.board.prior_threats(), !stm, td.stack[ply - 1].mv, bucket, bonus);
     }
 
     // Hindsight reductions
@@ -749,7 +751,10 @@ fn search<NODE: NodeType>(
         let is_direct_check = td.board.is_direct_check(mv);
 
         let history = if is_quiet {
-            td.quiet_history.get(td.board.all_threats(), stm, mv) + td.conthist(ply, 1, mv) + td.conthist(ply, 2, mv)
+            let bucket = td.board.fiftymove_clock_bucket();
+            td.quiet_history.get(td.board.all_threats(), stm, mv, bucket)
+                + td.conthist(ply, 1, mv)
+                + td.conthist(ply, 2, mv)
         } else {
             let captured_type = td.board.type_on(mv.to());
             td.noisy_history.get(td.board.all_threats(), td.board.moved_piece(mv), mv.to(), captured_type)
@@ -1061,13 +1066,15 @@ fn search<NODE: NodeType>(
                 noisy_bonus,
             );
         } else {
-            td.quiet_history.update(td.board.all_threats(), stm, best_move, quiet_bonus);
+            let bucket = td.board.fiftymove_clock_bucket();
+
+            td.quiet_history.update(td.board.all_threats(), stm, best_move, bucket, quiet_bonus);
             update_continuation_histories(td, ply, td.board.moved_piece(best_move), best_move.to(), cont_bonus);
 
             for (i, &mv) in quiet_moves.iter().enumerate() {
                 let denom = 1024 + 45 * i as i32;
                 let scale = 1024_i32 * 1024 / (denom * denom / 1024);
-                td.quiet_history.update(td.board.all_threats(), stm, mv, -quiet_malus * scale / 1024);
+                td.quiet_history.update(td.board.all_threats(), stm, mv, bucket, -quiet_malus * scale / 1024);
                 update_continuation_histories(td, ply, td.board.moved_piece(mv), mv.to(), -cont_malus * scale / 1024);
             }
         }
@@ -1104,8 +1111,9 @@ fn search<NODE: NodeType>(
                 + 306 * (is_valid(td.stack[ply - 1].eval) && best_score <= -td.stack[ply - 1].eval - 136) as i32;
 
             let scaled_bonus = factor * (180 * depth - 37).min(2414) / 128;
+            let bucket = td.board.prior_fiftymove_clock_bucket();
 
-            td.quiet_history.update(td.board.prior_threats(), !stm, prior_move, scaled_bonus);
+            td.quiet_history.update(td.board.prior_threats(), !stm, prior_move, bucket, scaled_bonus);
 
             let entry = &td.stack[ply - 2];
             if entry.mv.is_present() {

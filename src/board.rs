@@ -76,6 +76,11 @@ impl Board {
         (self.fiftymove_clock().saturating_sub(8) as usize / 8).min(15)
     }
 
+    pub fn prior_fiftymove_clock_bucket(&self) -> usize {
+        debug_assert!(!self.state_stack.is_empty());
+        (self.state_stack[self.state_stack.len() - 1].fiftymove_clock.saturating_sub(8) as usize / 8).min(15)
+    }
+
     pub fn hash(&self) -> u64 {
         // To mitigate Graph History Interaction (GHI) problems, the hash key is changed
         // every 8 plies to distinguish between positions that would otherwise appear

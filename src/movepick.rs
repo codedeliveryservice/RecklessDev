@@ -192,12 +192,13 @@ impl MovePicker {
         } else {
             Bitboard(0)
         };
+        let bucket = td.board.fiftymove_clock_bucket();
 
         for entry in self.list.iter_mut() {
             let mv = entry.mv;
             let pt = td.board.type_on(mv.from());
 
-            entry.score = 1973 * td.quiet_history.get(threats, side, mv) / 1024
+            entry.score = 1973 * td.quiet_history.get(threats, side, mv, bucket) / 1024
                 + 1573 * td.conthist(ply, 1, mv) / 1024
                 + 956 * td.conthist(ply, 2, mv) / 1024
                 + 987 * td.conthist(ply, 4, mv) / 1024
