@@ -1064,9 +1064,8 @@ fn search<NODE: NodeType>(
             td.quiet_history.update(td.board.all_threats(), stm, best_move, quiet_bonus);
             update_continuation_histories(td, ply, td.board.moved_piece(best_move), best_move.to(), cont_bonus);
 
-            for (i, &mv) in quiet_moves.iter().enumerate() {
-                let denom = 1024 + 45 * i as i32;
-                let scale = 1024_i32 * 1024 / (denom * denom / 1024);
+            for (i, &mv) in (0..).zip(quiet_moves.iter()) {
+                let scale = i * i / 2 - 45 * i + 1126;
                 td.quiet_history.update(td.board.all_threats(), stm, mv, -quiet_malus * scale / 1024);
                 update_continuation_histories(td, ply, td.board.moved_piece(mv), mv.to(), -cont_malus * scale / 1024);
             }
