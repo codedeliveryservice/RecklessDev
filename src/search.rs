@@ -1065,7 +1065,7 @@ fn search<NODE: NodeType>(
             update_continuation_histories(td, ply, td.board.moved_piece(best_move), best_move.to(), cont_bonus);
 
             for (i, &mv) in (0..).zip(quiet_moves.iter()) {
-                let scale = i * i / 2 - 45 * i + 1126;
+                let scale = -25 * i + 1024;
                 td.quiet_history.update(td.board.all_threats(), stm, mv, -quiet_malus * scale / 1024);
                 update_continuation_histories(td, ply, td.board.moved_piece(mv), mv.to(), -cont_malus * scale / 1024);
             }
