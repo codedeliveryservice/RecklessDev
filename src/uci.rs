@@ -401,7 +401,13 @@ fn parse_limits(color: Color, tokens: &[&str]) -> Limits {
             match name {
                 "depth" if value > 0 => return Limits::Depth(value as i32),
                 "movetime" if value > 0 => return Limits::Time(value),
-                "nodes" if value > 0 => return Limits::Nodes(value),
+                "nodes" if value > 0 => {
+                    const NODES_RANDOMIZATION: i32 = 2048;
+
+                    return Limits::Nodes(
+                        (value as i32 + rand::random_range(-NODES_RANDOMIZATION..=NODES_RANDOMIZATION)) as u64,
+                    );
+                }
 
                 "wtime" if Color::White == color => main = Some(value),
                 "btime" if Color::Black == color => main = Some(value),

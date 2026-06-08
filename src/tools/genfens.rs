@@ -15,14 +15,14 @@ use crate::{
     types::{Move, is_decisive, normalize_to_cp},
 };
 
-const RANDOM_PLIES: &[usize] = &[4, 5];
+const MULTIPV_PLIES: &[usize] = &[4, 5];
 
 const VALIDATION_ABS_MIN_CP: i32 = 50;
-const VALIDATION_ABS_MAX_CP: i32 = 150;
+const VALIDATION_ABS_MAX_CP: i32 = 250;
 const VALIDATION_LIMITS: Limits = Limits::Nodes(20_000);
 
-const OPENING_SEARCH_LIMITS: Limits = Limits::Nodes(4_000);
-const OPENING_MULTIPV_LINES: usize = 6;
+const OPENING_SEARCH_LIMITS: Limits = Limits::Nodes(5_000);
+const OPENING_MULTIPV_LINES: usize = 5;
 
 pub fn genfens() {
     let args = std::env::args().nth(1).unwrap();
@@ -58,7 +58,7 @@ fn generate_random_opening(rng: &mut StdRng, book: &[String], td: &mut ThreadDat
     let index = rng.random_range(0..book.len());
     td.board = Board::from_fen(&book[index]).unwrap();
 
-    let plies = RANDOM_PLIES[rng.random_range(0..RANDOM_PLIES.len())];
+    let plies = MULTIPV_PLIES[rng.random_range(0..MULTIPV_PLIES.len())];
     for _ in 0..plies {
         let Some(mv) = choose_move(rng, td) else {
             return generate_random_opening(rng, book, td);
