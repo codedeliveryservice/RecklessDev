@@ -1,7 +1,7 @@
 EXE    := reckless
 TARGET := $(shell rustc --print host-tuple)
 
-RUSTFLAGS ?= -C target-cpu=native
+RUSTFLAGS ?= -C target-cpu=x86-64-v3
 export RUSTFLAGS
 
 ifdef MSYSTEM
