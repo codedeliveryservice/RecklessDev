@@ -43,14 +43,14 @@ mod forward {
 }
 
 mod simd {
-    #[cfg(target_feature = "avx512f")]
+    #[cfg(all(target_feature = "avx512f", not(feature = "force_avx2")))]
     mod avx512;
-    #[cfg(target_feature = "avx512f")]
+    #[cfg(all(target_feature = "avx512f", not(feature = "force_avx2")))]
     pub use avx512::*;
 
-    #[cfg(all(target_feature = "avx2", not(target_feature = "avx512f")))]
+    #[cfg(any(all(target_feature = "avx2", not(target_feature = "avx512f")), feature = "force_avx2"))]
     mod avx2;
-    #[cfg(all(target_feature = "avx2", not(target_feature = "avx512f")))]
+    #[cfg(any(all(target_feature = "avx2", not(target_feature = "avx512f")), feature = "force_avx2"))]
     pub use avx2::*;
 
     #[cfg(all(target_feature = "neon", not(any(target_feature = "avx2", target_feature = "avx512f"))))]
@@ -91,9 +91,9 @@ const L3_SIZE: usize = 32;
 const FT_QUANT: i32 = 255;
 const L1_QUANT: i32 = 64;
 
-#[cfg(target_feature = "avx512f")]
+#[cfg(all(target_feature = "avx512f", not(feature = "force_avx2")))]
 const FT_SHIFT: u32 = 9;
-#[cfg(not(target_feature = "avx512f"))]
+#[cfg(not(all(target_feature = "avx512f", not(feature = "force_avx2"))))]
 const FT_SHIFT: i32 = 9;
 
 const DEQUANT_MULTIPLIER: f32 = (1 << FT_SHIFT) as f32 / (FT_QUANT * FT_QUANT * L1_QUANT) as f32;

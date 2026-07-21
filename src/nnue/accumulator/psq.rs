@@ -67,7 +67,7 @@ impl PstAccumulator {
     }
 
     #[inline]
-    #[cfg(not(target_feature = "avx512vbmi2"))]
+    #[cfg(any(not(target_feature = "avx512vbmi2"), feature = "force_avx2"))]
     fn push_features(
         features: &mut ArrayVec<PstFeature, 64>, color: Color, piece_type: PieceType, bb: Bitboard, king: Square,
         pov: Color,
@@ -78,7 +78,7 @@ impl PstAccumulator {
     }
 
     #[inline]
-    #[cfg(target_feature = "avx512vbmi2")]
+    #[cfg(all(target_feature = "avx512vbmi2", not(feature = "force_avx2")))]
     fn push_features(
         features: &mut ArrayVec<PstFeature, 64>, color: Color, piece_type: PieceType, bb: Bitboard, king: Square,
         pov: Color,

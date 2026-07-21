@@ -30,14 +30,14 @@ impl MoveList {
         self.inner.push(MoveEntry { mv: Move::new(from, to, kind), score: 0 });
     }
 
-    #[cfg(not(target_feature = "avx512vbmi2"))]
+    #[cfg(any(not(target_feature = "avx512vbmi2"), feature = "force_avx2"))]
     pub fn push_setwise(&mut self, from: Square, to_bb: Bitboard, kind: MoveKind) {
         for to in to_bb {
             self.push(from, to, kind);
         }
     }
 
-    #[cfg(target_feature = "avx512vbmi2")]
+    #[cfg(all(target_feature = "avx512vbmi2", not(feature = "force_avx2")))]
     pub fn push_setwise(&mut self, from: Square, to_bb: Bitboard, kind: MoveKind) {
         if !to_bb.is_empty() {
             use std::{arch::x86_64::*, mem::transmute};
@@ -66,14 +66,14 @@ impl MoveList {
         }
     }
 
-    #[cfg(not(target_feature = "avx512vbmi2"))]
+    #[cfg(not(all(target_feature = "avx512vbmi2", not(feature = "force_avx2"))))]
     pub fn push_pawns_setwise(&mut self, offset: i8, to_bb: Bitboard, kind: MoveKind) {
         for to in to_bb {
             self.push(to.shift(-offset), to, kind);
         }
     }
 
-    #[cfg(target_feature = "avx512vbmi2")]
+    #[cfg(all(target_feature = "avx512vbmi2", not(feature = "force_avx2")))]
     pub fn push_pawns_setwise(&mut self, offset: i8, to_bb: Bitboard, kind: MoveKind) {
         if !to_bb.is_empty() {
             use std::{arch::x86_64::*, mem::transmute};

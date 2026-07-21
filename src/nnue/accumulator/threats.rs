@@ -89,9 +89,9 @@ impl ThreatAccumulator {
             }
         }
 
-        #[cfg(target_feature = "avx512f")]
+        #[cfg(all(target_feature = "avx512f", not(feature = "force_avx2")))]
         const REGISTERS: usize = L1_SIZE / simd::I16_LANES;
-        #[cfg(not(target_feature = "avx512f"))]
+        #[cfg(any(not(target_feature = "avx512f"), feature = "force_avx2"))]
         const REGISTERS: usize = 8;
 
         unsafe {
@@ -154,9 +154,9 @@ impl ThreatAccumulator {
             }
         }
 
-        #[cfg(target_feature = "avx512f")]
+        #[cfg(all(target_feature = "avx512f", not(feature = "force_avx2")))]
         const REGISTERS: usize = L1_SIZE / simd::I16_LANES;
-        #[cfg(not(target_feature = "avx512f"))]
+        #[cfg(any(not(target_feature = "avx512f"), feature = "force_avx2"))]
         const REGISTERS: usize = 8;
 
         let mut registers: [_; REGISTERS] = std::mem::zeroed();

@@ -80,7 +80,7 @@ impl<T: Copy, const N: usize> ArrayVec<T, N> {
 }
 
 impl<const N: usize> ArrayVec<MoveEntry, N> {
-    #[cfg(target_feature = "avx512vbmi2")]
+    #[cfg(all(target_feature = "avx512vbmi2", not(feature = "force_avx2")))]
     pub unsafe fn splat8(&mut self, mask: u32, vector: std::arch::x86_64::__m512i) {
         use std::arch::x86_64::*;
 
@@ -91,7 +91,7 @@ impl<const N: usize> ArrayVec<MoveEntry, N> {
         self.len += count;
     }
 
-    #[cfg(target_feature = "avx512vbmi2")]
+    #[cfg(all(target_feature = "avx512vbmi2", not(feature = "force_avx2")))]
     pub unsafe fn splat16(&mut self, mask: u32, vector: std::arch::x86_64::__m512i) {
         use std::arch::x86_64::*;
 

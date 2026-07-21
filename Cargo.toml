@@ -9,9 +9,10 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["syzygy"]
+default = ["syzygy", "force_avx2"]
 syzygy = []
 spsa = []
+force_avx2 = []
 
 [profile.dev]
 opt-level = 3

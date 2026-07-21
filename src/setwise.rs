@@ -103,7 +103,7 @@ pub fn rook_attacks_setwise(bb: Bitboard, occupancies: Bitboard) -> Bitboard {
     }
 }
 
-#[cfg(all(target_feature = "avx2", not(target_feature = "avx512f")))]
+#[cfg(any(all(target_feature = "avx2", not(target_feature = "avx512f")), feature = "force_avx2"))]
 #[inline]
 unsafe fn shiftv<const A: i64, const B: i64, const C: i64, const D: i64>(
     vector: core::arch::x86_64::__m256i,
@@ -116,7 +116,7 @@ unsafe fn shiftv<const A: i64, const B: i64, const C: i64, const D: i64>(
     )
 }
 
-#[cfg(target_feature = "avx512f")]
+#[cfg(all(target_feature = "avx512f", not(feature = "force_avx2")))]
 #[inline]
 unsafe fn shiftv<const A: i64, const B: i64, const C: i64, const D: i64>(
     vector: core::arch::x86_64::__m256i,

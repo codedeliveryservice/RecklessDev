@@ -98,7 +98,7 @@ impl super::Board {
         value
     }
 
-    #[cfg(target_feature = "avx512f")]
+    #[cfg(all(target_feature = "avx512f", not(feature = "force_avx2")))]
     fn least_valuable_attacker(&self, attackers: Bitboard) -> PieceType {
         use std::arch::x86_64::*;
 
@@ -123,7 +123,7 @@ impl super::Board {
         PieceType::new(mask.trailing_zeros() as usize)
     }
 
-    #[cfg(not(target_feature = "avx512f"))]
+    #[cfg(not(all(target_feature = "avx512f", not(feature = "force_avx2"))))]
     fn least_valuable_attacker(&self, attackers: Bitboard) -> PieceType {
         let mask = u8::from(!(self.pieces(PieceType::Pawn) & attackers).is_empty())
             | u8::from(!(self.pieces(PieceType::Knight) & attackers).is_empty()) << 1
