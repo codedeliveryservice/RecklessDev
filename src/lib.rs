@@ -41,5 +41,11 @@ pub mod wasm;
 pub fn run(buffer: std::collections::VecDeque<String>) {
     lookup::initialize();
     nnue::initialize();
+
+    if std::env::args().any(|v| v.contains("genfens")) {
+        tools::genfens();
+        return;
+    }
+
     uci::message_loop(buffer);
 }

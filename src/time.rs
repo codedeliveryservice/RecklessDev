@@ -88,7 +88,7 @@ impl TimeManager {
 
         match self.limits {
             Limits::Infinite | Limits::Depth(_) | Limits::Mate(_) => false,
-            Limits::Nodes(maximum) => td.shared.nodes.aggregate() > maximum,
+            Limits::Nodes(_) => td.shared.nodes.get(td.id) >= 256_000,
             _ => td.nodes() & 2047 == 2047 && self.start_time.elapsed() >= self.hard_bound,
         }
     }
@@ -97,6 +97,7 @@ impl TimeManager {
         self.limits.clone()
     }
 
+    #[allow(dead_code)]
     pub fn use_time_management(&self) -> bool {
         matches!(self.limits, Limits::Fischer(..) | Limits::Cyclic(..) | Limits::Time(_))
     }
